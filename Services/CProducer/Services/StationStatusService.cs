@@ -1,22 +1,23 @@
 namespace CProducer.Services;
+
 using CProducer.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
-public class StationInformationService
+public class StationStatusService
 {
     private readonly IHttpClientFactory _factory;
 
-    public StationInformationService(IHttpClientFactory factory)
+    public StationStatusService(IHttpClientFactory factory)
     {
-        _factory = factory; 
+        _factory = factory;
     }
 
     private async Task<string> ReadFromWeb()
     {
         var client = _factory.CreateClient();
 
-        var response = await client.GetAsync("https://gbfs.lyft.com/gbfs/2.3/bkn/en/station_information.json");
+        var response = await client.GetAsync("https://gbfs.lyft.com/gbfs/2.3/bkn/en/station_status.json");
 
         response.EnsureSuccessStatusCode(); //this throws httpExeption
 
@@ -25,16 +26,16 @@ public class StationInformationService
         return json;
     }
 
-    public async Task<IEnumerable<StationInformation>> ProcessData()
+    public async Task<IEnumerable<StationStatus>> ProcessData()
     {
         var json = await ReadFromWeb();
 
-        var jsonObj = JsonSerializer.Deserialize<StationInfoResponse>(json);
+        var jsonObj = JsonSerializer.Deserialize<StationStatusResponse>(json);
 
         var stations = jsonObj?.Data?.Stations
-                       ?? Enumerable.Empty<StationInformation>();
+                       ?? Enumerable.Empty<StationStatus>();
 
-        var validStations = new List<StationInformation>();
+        var validStations = new List<StationStatus>();
 
         foreach (var station in stations)
         {
@@ -54,11 +55,10 @@ public class StationInformationService
             }
             else
             {
-                // invalid stations rejected 
+                // invadid so rejected
                 foreach (var error in results)
                 {
                     Console.WriteLine($"Invalid station: {error.ErrorMessage}");
-                    //TODO will be replaced with logger
                 }
             }
         }
