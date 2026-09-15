@@ -1,0 +1,75 @@
+# =========================
+# .NET / C#
+# =========================
+
+# Build output
+**/bin/
+**/obj/
+
+# Visual Studio
+**/.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+**/.vscode/
+
+# Rider / JetBrains
+.idea/
+**/.idea/
+*.sln.iml
+
+# .NET generated files
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# NuGet
+**/packages/
+*.nupkg
+*.snupkg
+
+# Test results
+**/TestResults/
+*.trx
+
+# Coverage
+**/coverage/
+*.coverage
+*.coveragexml
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# =========================
+# ASP.NET / .NET local files
+# =========================
+
+# User secrets
+secrets.json
+
+# Local development settings
+appsettings.Development.json
+
+# =========================
+# Environment / secrets
+# =========================
+
+.env
+.env.*
+!.env.example
