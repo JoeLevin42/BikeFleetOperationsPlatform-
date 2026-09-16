@@ -17,10 +17,10 @@ public class KafkaProducerService
 
             BootstrapServers = broker
         };
-        _producer = new ProducerBuilder<Null, string>(config).Build();
+        _producer = new ProducerBuilder<Null, string>(config).Build();      
     }
 
-public async Task ProduceAsync<T>(string topic, T data)
+public async Task ProduceJObjAsync<T>(string topic, T data)
     {
         var json = JsonSerializer.Serialize(data);
 

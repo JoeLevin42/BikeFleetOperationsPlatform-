@@ -1,3 +1,7 @@
+using Cproducer.Services;
+using CProducer.Models;
+using System.Text.Json;
+
 namespace CProducer.Services;
 
 public class ProducerService
@@ -5,15 +9,18 @@ public class ProducerService
     private readonly StationStatusService _stationStatusService;
     private readonly StationInformationService _stationInformationSerive;
     private readonly VehicleTypesService _vehicleTypesService;
+    private readonly KafkaProducerService _kafkaProducerService;
 
     public ProducerService(
         StationStatusService stationStatusService,
         StationInformationService stationInformationSerive,
-        VehicleTypesService vehicleTypesService)
+        VehicleTypesService vehicleTypesService,
+        KafkaProducerService kafkaProducerService)
     {
         _stationStatusService = stationStatusService;
         _stationInformationSerive = stationInformationSerive;
         _vehicleTypesService = vehicleTypesService;
+        _kafkaProducerService = kafkaProducerService;
     }
 
     public async Task Run()
@@ -60,8 +67,11 @@ public class ProducerService
 
         var stations = await _stationStatusService.ProcessData();
 
-        //TODO send to kafka
-
+        foreach (var station in stations)
+        {
+            await _kafkaProducerService.ProduceJObjAsync<StationStatus>("bike.station-status", station);
+        }
+        
 
         Console.WriteLine($"Station status {stations.Count()} stations");
     }
@@ -71,7 +81,11 @@ public class ProducerService
         var stations = await _stationInformationSerive.ProcessData();
 
 
-        //TODO send to kafka
+
+        foreach (var stationInfo in stations)
+        {
+            await _kafkaProducerService.ProduceJObjAsync<StationInformation>("bike.station-information", stationInfo);
+        }
         Console.WriteLine($"Stations information {stations.Count()} stations");
     }
 
@@ -79,7 +93,10 @@ public class ProducerService
     {
         var vehicles = await _vehicleTypesService.ProcessData();
 
-        //Todo send to kafka
+        foreach (var vehicle in vehicles)
+        {
+            await _kafkaProducerService.ProduceJObjAsync<VehicleType>("bike.vehicle-types", vehicle);
+        }
 
         Console.WriteLine($"Vehicle types: {vehicles.Count()} vehicles");
 
