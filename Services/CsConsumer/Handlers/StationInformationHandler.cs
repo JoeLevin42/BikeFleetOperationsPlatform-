@@ -15,8 +15,9 @@ public class StationInformationHandler
     private readonly StationInformationService _service;
 
 
-    public StationInformationHandler()
+    public StationInformationHandler(StationInformationService service)
     {
+        _service = service;
         var broker = Environment.GetEnvironmentVariable("KAFKA_BROKER") ?? "localhost:9092";
         var config = new ConsumerConfig
         {
