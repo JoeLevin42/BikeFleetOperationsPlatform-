@@ -20,6 +20,7 @@ public class StationStatus
 {
     [JsonPropertyName("station_id")]
     [Required]
+    [Key]
     public string StationId { get; set; }
 
     [JsonPropertyName("num_bikes_available")]

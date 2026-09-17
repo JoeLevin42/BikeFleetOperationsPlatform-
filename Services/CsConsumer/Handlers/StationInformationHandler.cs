@@ -1,24 +1,24 @@
-
-
+using System.Text.Json;
 using Confluent.Kafka;
-using CsConsumer.Data;
 using CsConsumer.Models;
 using CsConsumer.Services;
-using System.Text.Json;
 
 namespace CsConsumer.Handlers;
-
 
 public class StationInformationHandler
 {
     private readonly IConsumer<Null, string> _consumer;
     private readonly StationInformationService _service;
 
-
-    public StationInformationHandler(StationInformationService service)
+    public StationInformationHandler(
+        StationInformationService service)
     {
         _service = service;
-        var broker = Environment.GetEnvironmentVariable("KAFKA_BROKER") ?? "localhost:9092";
+
+        var broker =
+            Environment.GetEnvironmentVariable("KAFKA_BROKER")
+            ?? "localhost:9092";
+
         var config = new ConsumerConfig
         {
             BootstrapServers = broker,
@@ -26,42 +26,41 @@ public class StationInformationHandler
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
 
-        _consumer = new ConsumerBuilder<Null, string>(config).Build();
+        _consumer =
+            new ConsumerBuilder<Null, string>(config).Build();
     }
-    
-    public void StationInforamtionConsume()
-    {   
-        _consumer.Subscribe("bike.station-information"); 
-        //right now its will be hardcoded later its will get from env
 
-        
+    public void StationInforamtionConsume()
+    {
+        var topic =
+            Environment.GetEnvironmentVariable(
+                "STATION_INFORMATION_TOPIC")
+            ?? "bike.station-information";
+
+        _consumer.Subscribe(topic);
+
         while (true)
         {
             var result = _consumer.Consume();
 
-            var response = JsonSerializer.Deserialize<StationInfoResponse>(
-                result.Message.Value);
+            var station =
+                JsonSerializer.Deserialize<StationInformation>(
+                    result.Message.Value);
 
-            if (response == null)
+            if (station == null)
             {
-                Console.WriteLine("Failed to desrialize station information");
+                Console.WriteLine(
+                    "Failed to deserialize station information.");
+
                 continue;
             }
 
-            bool success = _service.ProcessStations(response);
+            var success =
+                _service.ProcessStation(station);
 
-            if (success)
-            {
-                Console.WriteLine("Station information processed successfully");
-            }
-            else
-            {
-                Console.WriteLine("Failed to procees station information");
-            }
-
+            Console.WriteLine(success
+                ? $"Station {station.StationId} processed successfully."
+                : $"Station {station.StationId} was ignored.");
         }
     }
-
-
-
 }

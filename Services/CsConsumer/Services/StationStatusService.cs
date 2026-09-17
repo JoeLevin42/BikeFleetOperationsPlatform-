@@ -1,4 +1,5 @@
 using CsConsumer.Models;
+using MongoDB.Driver;
 using StackExchange.Redis;
 using System.Text.Json;
 
@@ -7,27 +8,31 @@ namespace CsConsumer.Services;
 public class StationStatusService
 {
     private readonly IDatabase _redis;
+    private readonly IMongoCollection<StationStatus> _mongoCollection;
 
-    public StationStatusService(IConnectionMultiplexer redis)
+    public StationStatusService(
+        IConnectionMultiplexer redis,
+        IMongoClient mongoClient)
     {
         _redis = redis.GetDatabase();
+
+        var database = mongoClient.GetDatabase("DeveloperLearning");
+
+        _mongoCollection = database.GetCollection<StationStatus>(
+            "station_status");
     }
 
     public async Task<bool> ProcessStationStatus(StationStatus status)
     {
-        // 1. Validate the status
         if (!ValidateStatus(status))
         {
             return false;
         }
 
-        // 2. Create Redis key for this station
         string key = $"station-status:{status.StationId}";
 
-        // 3. Get previous state from Redis
         var previousState = await _redis.StringGetAsync(key);
 
-        // 4. If there is a previous state, compare it
         if (previousState.HasValue)
         {
             var previousStatus =
@@ -37,15 +42,12 @@ public class StationStatusService
             if (previousStatus != null &&
                 !HasChanged(previousStatus, status))
             {
-                // Nothing changed
                 return false;
             }
         }
 
-        // 5. State is new or changed
-        // MongoDB saving will happen after this.
+        await _mongoCollection.InsertOneAsync(status);
 
-        // 6. Update Redis with the new state
         var newState = JsonSerializer.Serialize(status);
 
         await _redis.StringSetAsync(key, newState);

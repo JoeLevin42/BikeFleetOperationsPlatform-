@@ -12,25 +12,23 @@ public class StationInformationService
         _context = context;
     }
 
-    public bool ProcessStations(StationInfoResponse response)
+    public bool ProcessStation(StationInformation station)
     {
-        foreach (var station in response.Data.Stations)
+        if (!ValidateStation(station))
         {
-            if (!ValidateStation(station))
-            {
-                return false;
-            }
+            return false;
+        }
 
-            var existingStation = GetStation(station.StationId);
+        var existingStation =
+            GetStation(station.StationId);
 
-            if (existingStation == null)
-            {
-                AddStation(station);
-            }
-            else if (HasChanged(existingStation, station))
-            {
-                UpdateStation(existingStation, station);
-            }
+        if (existingStation == null)
+        {
+            AddStation(station);
+        }
+        else if (HasChanged(existingStation, station))
+        {
+            UpdateStation(existingStation, station);
         }
 
         _context.SaveChanges();
@@ -40,15 +38,17 @@ public class StationInformationService
 
     private bool ValidateStation(StationInformation station)
     {
-        return !string.IsNullOrWhiteSpace(station.StationId);
+        return !string.IsNullOrWhiteSpace(
+            station.StationId);
     }
 
     private StationInformation? GetStation(string stationId)
     {
         return _context.StationInformation
-            .FirstOrDefault(x => x.StationId == stationId);
+            .FirstOrDefault(x =>
+                x.StationId == stationId);
     }
-        
+
     private bool HasChanged(
         StationInformation existingStation,
         StationInformation newStation)

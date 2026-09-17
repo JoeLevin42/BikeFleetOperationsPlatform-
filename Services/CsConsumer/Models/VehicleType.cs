@@ -20,6 +20,7 @@ public class VehicleType
     
     [JsonPropertyName("vehicle_type_id")]
     [Required]
+    [Key]
     public string VehicleTypeId { get; set; } = "";
 
     [JsonPropertyName("form_factor")]

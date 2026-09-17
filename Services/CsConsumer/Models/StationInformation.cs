@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace CsConsumer.Models;
@@ -16,6 +17,7 @@ public class StationInfoResponse
 
 public class StationInformation
 {
+    [Key]
     [JsonPropertyName("station_id")]
     public string StationId { get; set; }
 
